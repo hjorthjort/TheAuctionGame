@@ -6,7 +6,7 @@ class Auction:
 
     def __init__(self, max_tokens=100, players=None, courses=None, clearing_function=None):
         if courses is None:
-            courses = [Course() for i in range(3)]
+            courses = [Course() for i in range(30)]
         if players is None:
             players = [Player() for i in range(10)]
         self.max_tokens = max_tokens
@@ -85,13 +85,14 @@ def uniform_distribution(range_min, range_max):
         return range_min + uniform.rvs() * (range_max - range_min)
     return dist
 
+
 def applied_clearing_function(bids, courses):
 
     n_player = len(bids)
     n_courses = len(courses)
     price=[0]*n_courses
     left_capacity=[0]*n_courses
-    assignment = [-1, -1] * n_player     #1st position: assigned class, 2nd cost of class
+    assignment = [[-1, -1]] * n_player     #1st position: assigned class, 2nd cost of class
 
     for c in range(n_courses):
         left_capacity[c] = courses[c].capacity

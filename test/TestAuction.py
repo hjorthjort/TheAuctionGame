@@ -9,3 +9,8 @@ class TestAuction(unittest.TestCase):
         res = auction.run_auction()  # Just make sure nothing fails.
         print(res)  # TODO: Remove
 
+    def test_run_real_clearing(self):
+        auction = Auction(clearing_function=applied_clearing_function)
+        res = auction.run_auction()  # Just make sure nothing fails.
+        print(res)
+
