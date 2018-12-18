@@ -9,5 +9,3 @@ class TestAuction(unittest.TestCase):
         res = auction.run_auction()  # Just make sure nothing fails.
         print(res)  # TODO: Remove
 
-if __name__ == '__main__':
-    unittest.main()
