@@ -6,7 +6,7 @@ class Auction:
 
     def __init__(self, max_tokens=100, players=None, courses=None, clearing_function=None):
         if courses is None:
-            courses = [Course() for i in range(30)]
+            courses = [Course() for i in range(3)]
         if players is None:
             players = [Player() for i in range(10)]
         self.max_tokens = max_tokens
