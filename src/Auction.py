@@ -71,6 +71,10 @@ def default_clearing_function(bids, courses):
     return ret
 
 
+def foo():
+    pass
+
+
 def _default_strategy(max_tokens, num_players, utilities, courses):
     """The "all-in" strategy."""
     assert(len(utilities) == len(courses))
@@ -85,13 +89,14 @@ def uniform_distribution(range_min, range_max):
         return range_min + uniform.rvs() * (range_max - range_min)
     return dist
 
+
 def applied_clearing_function(bids, courses):
 
     n_player = len(bids)
     n_courses = len(courses)
     price=[0]*n_courses
     left_capacity=[0]*n_courses
-    assignment = [-1, -1] * n_player     #1st position: assigned class, 2nd cost of class
+    assignment = [[-1, -1]] * n_player     #1st position: assigned class, 2nd cost of class
 
     for c in range(n_courses):
         left_capacity[c] = courses[c].capacity
