@@ -53,6 +53,10 @@ class Course:
 
 
 #  Useful default functions.
+"""
+A clearing function returns a list of tuples:
+(student_index, course_object)
+"""
 def default_clearing_function(bids, courses):
     """Just assign courses in the order they come in the array, until they are full."""
     assignments = [0] * len(courses)
@@ -71,7 +75,7 @@ def default_clearing_function(bids, courses):
     return ret
 
 
-def _default_strategy(max_tokens, num_players, utilities, courses):
+def _default_strategy(max_tokens, _num_players, utilities, courses):
     """The "all-in" strategy."""
     assert(len(utilities) == len(courses))
     bids = [0] * len(courses)
@@ -87,7 +91,6 @@ def uniform_distribution(range_min, range_max):
 
 
 def applied_clearing_function(bids, courses):
-
     n_player = len(bids)
     n_courses = len(courses)
     price=[0]*n_courses
