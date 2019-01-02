@@ -149,3 +149,103 @@ def applied_clearing_function(bids, courses):
     # assign bid to course
 
 
+# # # Plotting functions.
+
+#  This function just initializes a figure with a given number of line plots.
+#  It outputs a list where list[0] is the figure and list[1] is a list with
+#  line plot objects. This is important as update_plot takes this list and
+#  will update the plot data with new data being inputted.
+#  This function intializes the plot with empty data.
+#  It takes as INPUT the number of strategies you want to plot.
+def init_plot_population(number_of_strat):
+    strategy_population = [None] * number_of_strat
+    for i in range(0, number_of_strat):
+        strategy_population[i] = np.array([])
+
+    # Sources for plotting:
+    #       http://www.randalolson.com/2014/06/28/how-to-make
+    #       -beautiful-data-visualizations-in-python-with-matplotlib/
+    # The following are the "Tableau 20" colors as RGB. Check
+    #       https://public.tableau.com/profile/chris.gerrard#!/
+    #       vizhome/TableauColors/ColorPaletteswithRGBValues
+    # to see which color is which.
+    tableau20 = (
+        [(31, 119, 180), (174, 199, 232), (255, 127, 14), (255, 187, 120),
+         (44, 160, 44), (152, 223, 138), (214, 39, 40), (255, 152, 150),
+         (148, 103, 189), (197, 176, 213), (140, 86, 75), (196, 156, 148),
+         (227, 119, 194), (247, 182, 210), (127, 127, 127), (199, 199, 199),
+         (188, 189, 34), (219, 219, 141), (23, 190, 207), (158, 218, 229)])
+    # Scale the RGB values to the [0, 1] range, which is the format matplotlib
+    # accepts.
+    for i in range(len(tableau20)):
+        r, g, b = tableau20[i]
+        tableau20[i] = (r / 255., g / 255., b / 255.)
+
+    fig = plt.figure(figsize=(10, 7.5))
+
+    # See
+    #  https://matplotlib.org/gallery/style_sheets/style_sheets_reference.html
+    # for different style types.
+    plt.style.use('seaborn-talk')
+
+    # If LaTeX gives you problems disable these labels.
+    plt.xlabel(r'Iteration number ($t$)')
+    plt.ylabel(r'Population fraction $x_i$')
+    plt.title(r'Evolution of population fraction')
+
+    plot_list = []
+    for i in range(0, number_of_strat):
+        line, = plt.plot(strategy_population[i], color=tableau20[i % 20])
+        plot_list.append(line)
+
+    plt.show()
+    # plt.savefig("graph.png", bbox_inches="tight")
+
+    return fig, plot_list
+
+
+#  What this will do is update the plot with the new data.
+#  New data is expected in the form of a numpy array where
+#       new_data[i]=x_i,
+#  x_i being the population fraction of population i at the current time.
+#  Note: don't input the previous values, just the present population values.
+#  The plot should have been run before with init_plot_population().
+#  plot_output is the output of init_plot_population().
+#  Code inspired by the example from the following link:
+#  https://stackoverflow.com/questions/4098131/
+#  how-to-update-a-plot-in-matplotlib/4098938#4098938
+def update_plot(plot_output, time, new_data):
+    plot_line_list = plot_output[1]
+    nr_strat = len(plot_line_list)
+
+    for strat in range(0, nr_strat):
+        plot_line_list[strat].set_ydata(
+            np.append(plot_line_list[strat].get_ydata(),
+                      new_data[strat]))
+        plot_line_list[strat].set_xdata(
+            np.append(plot_line_list[strat].get_xdata(),
+                      time))  # Increase the time
+    ax = plt.gca()
+    ax.relim()
+    ax.autoscale_view()
+    fig = plot_output[0]
+    fig.canvas.draw()
+    fig.canvas.flush_events()
+
+
+# Now I will test the functions by generating data and plotting it.
+
+time = np.arange(0.1, 20, 0.1)
+plot_output = init_plot_population(3)  # plot_output[0] is the figure
+# plot_output[1] is a list of line
+# objects from which to pull the
+# x and y data from
+new_data = [None] * 3
+for t in time:
+    # Generate points to add to the plot:
+    new_data[0] = np.exp(-t)
+    new_data[1] = np.sin(t)
+    new_data[2] = np.log(t)
+
+    # Update the plot:
+    update_plot(plot_output, t, new_data)
