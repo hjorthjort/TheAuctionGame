@@ -3,6 +3,9 @@ from scipy.stats import uniform
 import matplotlib.pyplot as plt
 import numpy as np
 
+#import random
+#from datetime import datetime
+#random.seed(datetime.now())  # So that we have truly random numbers.
 
 class Auction:
     """Class that can simulate and auction."""
