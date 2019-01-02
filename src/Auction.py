@@ -1,5 +1,8 @@
 from scipy.stats import uniform
 
+import matplotlib.pyplot as plt
+import numpy as np
+
 
 class Auction:
     """Class that can simulate and auction."""
