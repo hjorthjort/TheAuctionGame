@@ -206,9 +206,9 @@ def init_plot_population(number_of_strat):
     plt.style.use('seaborn-talk')
 
     # If LaTeX gives you problems disable these labels.
-    plt.xlabel(r'Iteration number ($t$)')
-    plt.ylabel(r'Population fraction $x_i$')
-    plt.title(r'Evolution of population fraction')
+   # plt.xlabel(r'Iteration number ($t$)')
+   # plt.ylabel(r'Population fraction $x_i$')
+   # plt.title(r'Evolution of population fraction')
 
     plot_list = []
     for i in range(0, number_of_strat):
@@ -251,18 +251,20 @@ def update_plot(plot_output, time, new_data):
 
 
 # Now I will test the functions by generating data and plotting it.
-def test_plot():
-    time = np.arange(0.1, 20, 0.1)
-    plot_output = init_plot_population(3)  # plot_output[0] is the figure
-    # plot_output[1] is a list of line
-    # objects from which to pull the
-    # x and y data from
-    new_data = [None] * 3
-    for t in time:
-        # Generate points to add to the plot:
-        new_data[0] = np.exp(-t)
-        new_data[1] = np.sin(t)
-        new_data[2] = np.log(t)
+'''
+time = np.arange(0.1, 20, 0.1)
+plot_output = init_plot_population(3)  # plot_output[0] is the figure
+# plot_output[1] is a list of line
+# objects from which to pull the
+# x and y data from
+new_data = [None] * 3
+for t in time:
+    # Generate points to add to the plot:
+    new_data[0] = np.exp(-t)
+    new_data[1] = np.sin(t)
+    new_data[2] = np.log(t)
 
-        # Update the plot:
-        update_plot(plot_output, t, new_data)
+    # Update the plot:
+    update_plot(plot_output, t, new_data)
+'''
+
