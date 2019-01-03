@@ -189,9 +189,9 @@ def init_plot_population(number_of_strat):
     plt.style.use('seaborn-talk')
 
     # If LaTeX gives you problems disable these labels.
-    plt.xlabel(r'Iteration number ($t$)')
-    plt.ylabel(r'Population fraction $x_i$')
-    plt.title(r'Evolution of population fraction')
+   # plt.xlabel(r'Iteration number ($t$)')
+   # plt.ylabel(r'Population fraction $x_i$')
+   # plt.title(r'Evolution of population fraction')
 
     plot_list = []
     for i in range(0, number_of_strat):
