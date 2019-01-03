@@ -90,7 +90,7 @@ def default_clearing_function(bids, courses):
     return ret
 
 
-def _default_strategy(max_tokens: int, _num_players: int, utilities: List[Dict[Course, float]]):
+def _default_strategy(max_tokens: float, _num_players: int, utilities: Dict[Course, float]) -> Dict[Course, float]:
     """The "all-in" strategy."""
     bids = {}
     max_utility = -math.inf
@@ -251,18 +251,18 @@ def update_plot(plot_output, time, new_data):
 
 
 # Now I will test the functions by generating data and plotting it.
+def test_plot():
+    time = np.arange(0.1, 20, 0.1)
+    plot_output = init_plot_population(3)  # plot_output[0] is the figure
+    # plot_output[1] is a list of line
+    # objects from which to pull the
+    # x and y data from
+    new_data = [None] * 3
+    for t in time:
+        # Generate points to add to the plot:
+        new_data[0] = np.exp(-t)
+        new_data[1] = np.sin(t)
+        new_data[2] = np.log(t)
 
-time = np.arange(0.1, 20, 0.1)
-plot_output = init_plot_population(3)  # plot_output[0] is the figure
-# plot_output[1] is a list of line
-# objects from which to pull the
-# x and y data from
-new_data = [None] * 3
-for t in time:
-    # Generate points to add to the plot:
-    new_data[0] = np.exp(-t)
-    new_data[1] = np.sin(t)
-    new_data[2] = np.log(t)
-
-    # Update the plot:
-    update_plot(plot_output, t, new_data)
+        # Update the plot:
+        update_plot(plot_output, t, new_data)
