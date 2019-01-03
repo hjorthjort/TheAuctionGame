@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Tuple
 import math
 from scipy.stats import uniform
 
@@ -39,7 +39,7 @@ class Auction:
             num_players = len(self.players)
             bids = p.strategy(self.max_tokens, num_players, utilities)
             all_bids.append(bids)
-        return self.clearing_function(all_bids, self.courses), all_utilities
+        return self.clearing_function(all_bids), all_utilities
 
 
 class Player:
@@ -72,22 +72,22 @@ A clearing function returns a list of tuples:
 """
 
 
-def default_clearing_function(bids, courses):
-    """Just assign courses in the order they come in the array, until they are full."""
-    assignments = [0] * len(courses)
-    payment = 0  # Same for all.
-    student_idx = 0
-    course_idx = 0
-    ret = [None] * len(bids)
-    while student_idx < len(bids) and course_idx < len(courses):
-        c = courses[course_idx]
-        if assignments[course_idx] < c.capacity:
-            assignments[course_idx] += 1
-            ret[student_idx] = (payment, c)
-            student_idx += 1
-        else:
-            course_idx += 1
-    return ret
+def default_clearing_function(bids: List[Dict[Course, float]]) -> List[Tuple[float, Course]]:
+    """First-price auction: highest overall bid gets assigned a course, pay that price."""
+    assignments = [None] * len(bids)
+    bids_flattened = []
+    for player_idx in range(len(bids)):
+        bids_of_player = bids[player_idx]
+        for course, bid in bids_of_player.items():
+            bids_flattened.append((player_idx, course, bid))
+    bids_flattened.sort(key=lambda item: item[2], reverse=True)  # Sort on bid, descending.
+    assigned_players = set()
+    for player, course, bid in bids_flattened:
+        if player not in assigned_players:
+            assignments[player] = (bid, course)
+            assigned_players.add(player)
+            course.capacity -= 1
+    return assignments
 
 
 def _default_strategy(max_tokens: float, _num_players: int, utilities: Dict[Course, float]) -> Dict[Course, float]:
