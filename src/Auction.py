@@ -234,7 +234,7 @@ def update_plot(plot_output, time, new_data):
 
 
 # Now I will test the functions by generating data and plotting it.
-
+'''
 time = np.arange(0.1, 20, 0.1)
 plot_output = init_plot_population(3)  # plot_output[0] is the figure
 # plot_output[1] is a list of line
@@ -249,4 +249,5 @@ for t in time:
 
     # Update the plot:
     update_plot(plot_output, t, new_data)
+'''
 
