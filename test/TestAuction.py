@@ -6,7 +6,7 @@ class TestAuction(unittest.TestCase):
 
     def test_auction_correctness(self):
         auction = Auction()  # Default implementation.
-        res = auction.run_auction()
+        (res, all_utilities) = auction.run_auction()
         self.assertEqual(len(res), len(auction.players))
 
         actual_assignments = list(filter(lambda x: x is not None, res))  # All which are not None.
@@ -15,15 +15,11 @@ class TestAuction(unittest.TestCase):
 
         total_capacities = sum(map(lambda c : c.capacity, auction.courses))
         total_assigned_students = len(actual_assignments)
-        self.assertEqual(total_capacities, total_assigned_students,  "There are unassigned students and seats "
+        self.assertGreaterEqual(total_capacities, total_assigned_students,  "There are unassigned students and seats "
                                                                      "remaining.")
 
     def test_run_simple(self):
         auction = Auction()  # Default implementation.
-        res = auction.run_auction()  # Just make sure nothing fails.
+        auction.run_auction()  # Just make sure nothing fails.
 
-    def test_run_real_clearing(self):
-        auction = Auction(clearing_function=applied_clearing_function)
-        res = auction.run_auction()  # Just make sure nothing fails.
-        print(res)
 

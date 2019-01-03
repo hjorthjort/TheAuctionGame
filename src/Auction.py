@@ -1,3 +1,5 @@
+from typing import Dict, List
+import math
 from scipy.stats import uniform
 
 
@@ -6,9 +8,9 @@ class Auction:
 
     def __init__(self, max_tokens=100, players=None, courses=None, clearing_function=None):
         if courses is None:
-            courses = [Course() for i in range(3)]
+            courses = [Course() for _i in range(3)]
         if players is None:
-            players = [Player() for i in range(10)]
+            players = [Player() for _i in range(2)]
         self.max_tokens = max_tokens
         self.courses = courses
         self.players = players
@@ -17,16 +19,21 @@ class Auction:
         else:
             self.clearing_function = clearing_function
 
+    def with_players(self, players):
+        self.players = players
+
     def run_auction(self):
         """returns the allocations of courses to players."""
         all_bids = []
+        all_utilities = []
         for p in self.players:
             #  Draw a random utility for each course.
-            utilities = [c.popularity_distribution() for c in self.courses]
+            utilities = {c: c.popularity_distribution() for c in self.courses}
+            all_utilities.append(utilities)
             num_players = len(self.players)
-            bids = p.strategy(self.max_tokens, num_players, utilities, self.courses)
+            bids = p.strategy(self.max_tokens, num_players, utilities)
             all_bids.append(bids)
-        return self.clearing_function(all_bids, self.courses)
+        return self.clearing_function(all_bids, self.courses), all_utilities
 
 
 class Player:
@@ -57,6 +64,8 @@ class Course:
 A clearing function returns a list of tuples:
 (student_index, course_object)
 """
+
+
 def default_clearing_function(bids, courses):
     """Just assign courses in the order they come in the array, until they are full."""
     assignments = [0] * len(courses)
@@ -75,12 +84,20 @@ def default_clearing_function(bids, courses):
     return ret
 
 
-def _default_strategy(max_tokens, _num_players, utilities, courses):
+def _default_strategy(max_tokens: int, _num_players: int, utilities: List[Dict[Course, float]]):
     """The "all-in" strategy."""
-    assert(len(utilities) == len(courses))
-    bids = [0] * len(courses)
-    idx_of_max = utilities.index(max(utilities))
-    bids[idx_of_max] = max_tokens
+    bids = {}
+    max_utility = -math.inf
+    most_valued_course = None
+    for course, utility in utilities.items():
+        if max_utility < utility:
+            if most_valued_course is not None:
+                bids[most_valued_course] = 0
+            bids[course] = max_tokens
+            max_utility = utility
+            most_valued_course = course
+        else:
+            bids[course] = 0
     return bids
 
 
