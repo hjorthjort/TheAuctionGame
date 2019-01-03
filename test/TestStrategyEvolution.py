@@ -12,6 +12,12 @@ class TestAuction(unittest.TestCase):
         l1, l2 = unzip(l)
         self.assertListEqual(l, list(zip(l1, l2)))
 
+    def test_crossover(self):
+        population = initialize_population(100)
+        total_length = sum([len(chromosome) for chromosome in population])
+        apply_crossover(population, 0.7)
+        self.assertEqual(total_length, sum(len(chromosome) for chromosome in population))
+
     def test_decode_chromosome(self):
         chromosome = [3, -1, 1]
         player = decode_chromosome(chromosome)
