@@ -72,6 +72,8 @@ A clearing function returns a list of tuples:
 """
 
 
+# TODO: Change introduced: now returns an array indexed as the players (bids), used to return an array indexed on courses.
+# Make sure no breaking change...
 def default_clearing_function(bids: List[Dict[Course, float]]) -> List[Tuple[float, Course]]:
     """First-price auction: highest overall bid gets assigned a course, pay that price."""
     assignments = [None] * len(bids)
