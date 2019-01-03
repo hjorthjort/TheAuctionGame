@@ -8,7 +8,7 @@ import numpy as np
 #random.seed(datetime.now())  # So that we have truly random numbers.
 
 class Auction:
-    """Class that can simulate and auction."""
+    """Class that can simulate an auction."""
 
     def __init__(self, max_tokens=100, players=None, courses=None, clearing_function=None):
         if courses is None:
