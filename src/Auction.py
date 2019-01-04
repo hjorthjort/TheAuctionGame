@@ -83,17 +83,20 @@ def default_clearing_function(bids: List[Dict[Course, float]]) -> List[Tuple[flo
     """First-price auction: highest overall bid gets assigned a course, pay that price."""
     assignments = [None] * len(bids)
     bids_flattened = []
+    capacities = {}
     for player_idx in range(len(bids)):
         bids_of_player = bids[player_idx]
         for course, bid in bids_of_player.items():
             bids_flattened.append((player_idx, course, bid))
+            capacities[course] = course.capacity
     bids_flattened.sort(key=lambda item: item[2], reverse=True)  # Sort on bid, descending.
     assigned_players = set()
     for player, course, bid in bids_flattened:
-        if player not in assigned_players:
+        if player not in assigned_players\
+                and capacities[course] > 0:
             assignments[player] = (bid, course)
             assigned_players.add(player)
-            course.capacity -= 1
+            capacities[course] -= 1
     return assignments
 
 
