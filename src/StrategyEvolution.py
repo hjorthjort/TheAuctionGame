@@ -1,9 +1,11 @@
 from scipy.stats import norm
 from src.Auction import *
 import random
+import numpy as np
 
 INITIAL_POLY_DEGREE = 2
 INITIAL_POLY_COEFFICEINT_STD = 0.1
+AUCTION_REPETITIONS = 100
 
 
 def run_ga(auction=Auction(), generations=10e3, population_size=100, tournament_prob=0.75, tournament_size=2,
@@ -12,7 +14,8 @@ def run_ga(auction=Auction(), generations=10e3, population_size=100, tournament_
     for i_generation in range(int(generations)):
         decoded_population = list(map(lambda coeff: decode_chromosome(coeff), population))
         auction.with_players(decoded_population)
-        best_individual_idx, fitnesses = get_fitnesses(auction)
+        fitnesses = get_fitnesses(auction)
+        best_individual_idx = fitnesses.index(max(fitnesses))
         best_individual = population[best_individual_idx]
 
         # Operators.
@@ -59,22 +62,22 @@ def initialize_population(population_size: int) -> List[List[float]]:
     return population
 
 
-def get_fitnesses(auction):
-    best_fitness = -math.inf
-    best_individual = -1
-    res, all_utilities = auction.run_auction()
-    fitnesses = [0] * len(res)
-    for individual_idx in range(len(res)):
-        if res[individual_idx] is None:
-            continue
-        pay, course = res[individual_idx]
-        utilities = all_utilities[individual_idx]
-        fitness = utilities[course] - pay
-        fitnesses[individual_idx] = fitness
-        if best_fitness < fitness:
-            best_fitness = fitness
-            best_individual = individual_idx
-    return best_individual, fitnesses
+def get_fitnesses(auction: Auction) -> List[float]:
+    total_fitnesses = np.array([.0] * len(auction.players))
+
+    # Compute average fitness over a number of auctions.
+    fitnesses = [.0] * len(auction.players)
+    for _i in range(AUCTION_REPETITIONS):
+        res, all_utilities = auction.run_auction()
+        for individual_idx in range(len(res)):
+            if res[individual_idx] is None:
+                continue
+            pay, course = res[individual_idx]
+            utilities = all_utilities[individual_idx]
+            fitness = utilities[course] - pay
+            fitnesses[individual_idx] = fitness
+        total_fitnesses += np.array(fitnesses)
+    return list(total_fitnesses / AUCTION_REPETITIONS)
 
 
 # Operators
