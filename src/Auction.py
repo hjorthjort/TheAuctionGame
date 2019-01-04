@@ -67,28 +67,36 @@ class Course:
 
 #  Useful default functions.
 """
-A clearing function returns a list of tuples:
-(student_index, course_object)
+The bids in sent to the clearing function are in a list, each index representing the bids of the player with that index.
+ Input: List of Dict from Course to Bid.
+ Output: List of tuples: the payment and the course. Indexed according to the bids index.
+
+Example: Player0 bids 10 for course1, 5 for course 2.
+         Player1 bids 7 for course1, 11 for course 2.
+Input: [{course1: 10, course2: 5},
+        {course1: 7,  course2: 11}]
+Output: [(10, course1), (11, course2)]  -- This would be a first-price assignment.
 """
 
 
-# TODO: Change introduced: now returns an array indexed as the players (bids), used to return an array indexed on courses.
-# Make sure no breaking change...
 def default_clearing_function(bids: List[Dict[Course, float]]) -> List[Tuple[float, Course]]:
     """First-price auction: highest overall bid gets assigned a course, pay that price."""
     assignments = [None] * len(bids)
     bids_flattened = []
+    capacities = {}
     for player_idx in range(len(bids)):
         bids_of_player = bids[player_idx]
         for course, bid in bids_of_player.items():
             bids_flattened.append((player_idx, course, bid))
+            capacities[course] = course.capacity
     bids_flattened.sort(key=lambda item: item[2], reverse=True)  # Sort on bid, descending.
     assigned_players = set()
     for player, course, bid in bids_flattened:
-        if player not in assigned_players:
+        if player not in assigned_players\
+                and capacities[course] > 0:
             assignments[player] = (bid, course)
             assigned_players.add(player)
-            course.capacity -= 1
+            capacities[course] -= 1
     return assignments
 
 
@@ -174,7 +182,7 @@ def applied_clearing_function(bids, courses):
 #  It outputs a list where list[0] is the figure and list[1] is a list with
 #  line plot objects. This is important as update_plot takes this list and
 #  will update the plot data with new data being inputted.
-#  This function intializes the plot with empty data.
+#  This function initializes the plot with empty data.
 #  It takes as INPUT the number of strategies you want to plot.
 def init_plot_population(number_of_strat):
     strategy_population = [None] * number_of_strat
