@@ -12,7 +12,7 @@ import numpy as np
 class Auction:
     """Class that can simulate and auction."""
 
-    def __init__(self, max_tokens=100, players=None, courses=None, clearing_function=None):
+    def __init__(self, max_tokens: float=100, players=None, courses=None, clearing_function=None):
         if courses is None:
             courses = [Course() for _i in range(3)]
         if players is None:
@@ -31,24 +31,8 @@ class Auction:
     def run_auction(self):
         """returns the allocations of courses to players."""
         all_bids = []
-        all_utilities = []
-        for p in self.players:
-            #  Draw a random utility for each course.
-            utilities = {c: c.popularity_distribution() for c in self.courses}
-            all_utilities.append(utilities)
-            num_players = len(self.players)
-            bids = p.strategy(self.max_tokens, num_players, utilities)
-            all_bids.append(bids)
+        all_utilities = [p.utilities for p in self.players]
         return self.clearing_function(all_bids), all_utilities
-
-
-class Player:
-
-    def __init__(self, strategy=None):
-        if strategy is None:
-            self.strategy = _default_strategy
-        else:
-            self.strategy = strategy
 
 
 class Course:
@@ -63,6 +47,20 @@ class Course:
 
     def __repr__(self):
         return "{" + self.name + ", id: " + str(id(self)) + ", capacity: " + str(self.capacity) + "}"
+
+
+class Player:
+
+    def __init__(self, strategy=None, utilities: Dict[Course, float]=None):
+        if strategy is None:
+            self.strategy = _default_strategy
+        else:
+            self.strategy = strategy
+        if utilities is None:
+            self.utilities = {}
+        else:
+            self.utilities = utilities
+
 
 
 #  Useful default functions.
