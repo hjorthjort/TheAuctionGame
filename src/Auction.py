@@ -5,9 +5,7 @@ from scipy.stats import uniform
 import matplotlib.pyplot as plt
 import numpy as np
 
-#import random
-#from datetime import datetime
-#random.seed(datetime.now())  # So that we have truly random numbers.
+import random
 
 class Auction:
     """Class that can simulate an auction."""
@@ -16,7 +14,7 @@ class Auction:
         if courses is None:
             courses = [Course() for _i in range(3)]
         if players is None:
-            players = [Player() for _i in range(2)]
+            players = [Player() for _i in range(3)]
         self.max_tokens = max_tokens
         self.courses = courses
         self.players = players
@@ -116,6 +114,19 @@ def _default_strategy(max_tokens: float, _num_players: int, utilities: Dict[Cour
             bids[course] = 0
     return bids
 
+def random_strategy(max_tokens: float, _num_players: int,
+                      utilities: Dict[Course, float]) -> Dict[Course, float]:
+    """
+    You bid a value at random, subject to the constraint that it all
+    must sum to one.
+    """
+    bids = {}
+    available_money = max_tokens
+    for course, utility in utilities.items():
+        bids[course] = random.random() * available_money
+        available_money -= bids[course]
+
+    return bids
 
 def uniform_distribution(range_min, range_max):
     def dist():
@@ -261,6 +272,59 @@ def update_plot(plot_output, time, new_data):
 
 
 # Now I will test the functions by generating data and plotting it.
+'''
+time = np.arange(0.1, 20, 0.1)
+plot_output = init_plot_population(3)  # plot_output[0] is the figure
+# plot_output[1] is a list of line
+# objects from which to pull the
+# x and y data from
+new_data = [None] * 3
+for t in time:
+    # Generate points to add to the plot:
+    new_data[0] = np.exp(-t)
+    new_data[1] = np.sin(t)
+    new_data[2] = np.log(t)
+
+    # Update the plot:
+    update_plot(plot_output, t, new_data)
+'''
+'''
+# Three players and three classes.
+number_of_courses = 3
+course_list = [Course(name=str(i), capacity=1)
+               for i in range(0, number_of_courses)]
+
+# For the moment we only have one default strategy.
+types_of_strategies = [ _default_strategy,
+                        random_strategy]
+number_of_strategies = len(types_of_strategies)
+
+number_of_players = 3
+player_list = [Player(strategy=random.choice(types_of_strategies))
+                        for i in range(0, number_of_players) ]
+
+number_of_wins = np.zeros(number_of_strategies) # This will serve as a counter.
+
+number_of_runs    = 10
+number_to_average = 100
+utility = np.zeros([number_of_players, number_to_average])
+average_utility = np.zeros(number_of_players)
+for i in range(0, number_to_average):
+    auction = Auction(players=player_list, courses=course_list)
+    outcome = auction.run_auction()
+    all_payments  = outcome[0] # Type List[Dict[Course, float]]
+    all_utilities = outcome[1] # Type List[Tuple[float, Course]]
+    for pl_i in range(0, number_of_players):
+        course_won      = all_payments[pl_i][1]
+        utility[pl_i,i] = all_utilities[pl_i][course_won]-all_payments[pl_i][0]
+for i in range(0,number_of_players):
+    average_utility[i] = np.average(utility[i,:])
+# Now we find the winner.
+winner_idx = np.argmax(average_utility)
+print(player_list[winner_idx].strategy.__name__)
+
+'''
+
 '''
 time = np.arange(0.1, 20, 0.1)
 plot_output = init_plot_population(3)  # plot_output[0] is the figure
