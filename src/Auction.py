@@ -290,100 +290,103 @@ for t in time:
     update_plot(plot_output, t, new_data)
 '''
 
-### Control variables
-number_of_courses = 3
-number_of_players = 3
-number_of_measurements = 5      # Between how many runs do we stop to update
-                                # the plot and measure.
-runs_between_measures = 100    # How many times run the whole process, ie,
-                                # how many times to start over with different
-                                # strategies.
-number_to_average = 200     # How much to average before looking at the highest
-                            # utility to determine the winner. I've chosen this
-                            # number as it is such that the variance intervals
-                            # centered on the mean don't overlap between the
-                            # winner and the second in line.
+def find_winning_strategy():
+    ### Control variables
+    number_of_courses = 3
+    number_of_players = 3
+    number_of_measurements = 5      # Between how many runs do we stop to update
+                                    # the plot and measure.
+    runs_between_measures = 100    # How many times run the whole process, ie,
+                                    # how many times to start over with different
+                                    # strategies.
+    number_to_average = 200     # How much to average before looking at the highest
+                                # utility to determine the winner. I've chosen this
+                                # number as it is such that the variance intervals
+                                # centered on the mean don't overlap between the
+                                # winner and the second in line.
 
-types_of_strategies  = [default_strategy,
-                        random_strategy]
-number_of_strategies = len(types_of_strategies)
-names_of_strategies  = [types_of_strategies[i].__name__
-                        for i in range(0, number_of_strategies)]
-'''
-plot_output = init_plot_population(number_of_strategies,
-                                   names_of_strategies)
-'''
+    types_of_strategies  = [default_strategy,
+                            random_strategy]
+    number_of_strategies = len(types_of_strategies)
+    names_of_strategies  = [types_of_strategies[i].__name__
+                            for i in range(0, number_of_strategies)]
+    '''
+    plot_output = init_plot_population(number_of_strategies,
+                                       names_of_strategies)
+    '''
 
-win_counter = np.zeros([number_of_strategies,
-                        number_of_measurements*runs_between_measures])
+    win_counter = np.zeros([number_of_strategies,
+                            number_of_measurements*runs_between_measures])
 
-course_list = [Course(name=str(i), capacity=1)
-               for i in range(0, number_of_courses)]
+    course_list = [Course(name=str(i), capacity=1)
+                   for i in range(0, number_of_courses)]
 
-for i_measure in range(0, number_of_measurements): # start from 1 to avoid having
-                                                   # to define some if statements
-    for run in range(0, runs_between_measures):
-        player_list = [Player(strategy=random.choice(types_of_strategies))
-                                for i in range(0, number_of_players) ]
+    for i_measure in range(0, number_of_measurements): # start from 1 to avoid having
+                                                       # to define some if statements
+        for run in range(0, runs_between_measures):
+            player_list = [Player(strategy=random.choice(types_of_strategies))
+                                    for i in range(0, number_of_players) ]
 
-        utility = np.zeros([number_of_players, number_to_average])
-        average_utility = np.zeros(number_of_players)
-        sigma_utility   = np.zeros(number_of_players) # For std. deviation
+            utility = np.zeros([number_of_players, number_to_average])
+            average_utility = np.zeros(number_of_players)
+            sigma_utility   = np.zeros(number_of_players) # For std. deviation
 
-        # In this loop we run the auction several times and record final utilities.
-        for i in range(0, number_to_average):
-            auction = Auction(players = player_list, courses = course_list)
-            outcome = auction.run_auction()
-            payments  = outcome[0] # Type List[Dict[Course, float]]
-            utilities = outcome[1] # Type List[Tuple[float, Course]]
-            for pl_i in range(0, number_of_players):
-                course_won      = payments[pl_i][1]
-                utility[pl_i,i] = ( utilities[pl_i][course_won]
-                                   -payments[pl_i][0])
-        # Now we average.
-        for i in range(0,number_of_players):
-            average_utility[i] = np.average(utility[i,:])
-            # Using the formula for the standard deviation of the mean or average:
-            sigma_utility[i]   = (  np.sqrt(np.var(utility[i,:]))
-                                   /np.sqrt(number_to_average)    )
+            # In this loop we run the auction several times and record final utilities.
+            for i in range(0, number_to_average):
+                auction = Auction(players = player_list, courses = course_list)
+                outcome = auction.run_auction()
+                payments  = outcome[0] # Type List[Dict[Course, float]]
+                utilities = outcome[1] # Type List[Tuple[float, Course]]
+                for pl_i in range(0, number_of_players):
+                    course_won      = payments[pl_i][1]
+                    utility[pl_i,i] = ( utilities[pl_i][course_won]
+                                       -payments[pl_i][0])
+            # Now we average.
+            for i in range(0,number_of_players):
+                average_utility[i] = np.average(utility[i,:])
+                # Using the formula for the standard deviation of the mean or average:
+                sigma_utility[i]   = (  np.sqrt(np.var(utility[i,:]))
+                                       /np.sqrt(number_to_average)    )
 
-        # Now we find the winner.
-        winner_idx = np.argmax(average_utility)
-        # The following gets the name of the winning strategy and finds its index.
-        winning_strategy_idx = names_of_strategies.index(
-                                    player_list[winner_idx].strategy.__name__ )
+            # Now we find the winner.
+            winner_idx = np.argmax(average_utility)
+            # The following gets the name of the winning strategy and finds its index.
+            winning_strategy_idx = names_of_strategies.index(
+                                        player_list[winner_idx].strategy.__name__ )
 
-        aux_idx = i_measure*runs_between_measures + run
-        win_counter[:,aux_idx] = win_counter[:,aux_idx-1]
-        win_counter[winning_strategy_idx,aux_idx] += 1
+            aux_idx = i_measure*runs_between_measures + run
+            win_counter[:,aux_idx] = win_counter[:,aux_idx-1]
+            win_counter[winning_strategy_idx,aux_idx] += 1
 
 
-    print('Measurement = '+str(i_measure)+'. Average utilities:')
-    for i in range(0, number_of_players):
-        print('Player',i,
-              '{0: <16}'.format(player_list[i].strategy.__name__), '\t',
-              round(average_utility[i],1), "+-",
-              round(sigma_utility[i]  ,1))
-    print('\n')
+        print('Measurement = '+str(i_measure)+'. Average utilities:')
+        for i in range(0, number_of_players):
+            print('Player',i,
+                  '{0: <16}'.format(player_list[i].strategy.__name__), '\t',
+                  round(average_utility[i],1), "+-",
+                  round(sigma_utility[i]  ,1))
+        print('\n')
 
-    #update_plot(plot_output, i_measure, win_counter[i_measure])
+        #update_plot(plot_output, i_measure, win_counter[i_measure])
 
-# The winning strategy is the one with most win counts at the wnd:
-final_winning_strategy_idx = np.argmax(win_counter[:,-1])
-print('*******')
-print('And the winner iiiissss .....: ',
-            names_of_strategies[final_winning_strategy_idx])
-print('*******')
+    # The winning strategy is the one with most win counts at the wnd:
+    final_winning_strategy_idx = np.argmax(win_counter[:,-1])
+    print('*******')
+    print('And the winner iiiissss .....: ',
+                names_of_strategies[final_winning_strategy_idx])
+    print('*******')
 
-x_axis = np.arange(0, number_of_measurements*runs_between_measures, 1)
-for i in range(0, number_of_strategies):
-    plt.plot(x_axis, win_counter[i,:], label=names_of_strategies[i])
+    x_axis = np.arange(0, number_of_measurements*runs_between_measures, 1)
+    for i in range(0, number_of_strategies):
+        plt.plot(x_axis, win_counter[i,:], label=names_of_strategies[i])
 
-# If the plot functions don't work use this, which plots at the end. With the
-# plot functions you plot live.
-plt.xlabel('Run number')
-plt.ylabel('Win count')
-plt.title('Win count for different strategies after averaging')
-plt.legend()
-plt.show()
+    # If the plot functions don't work use this, which plots at the end. With the
+    # plot functions you plot live.
+    plt.xlabel('Run number')
+    plt.ylabel('Win count')
+    plt.title('Win count for different strategies after averaging')
+    plt.legend()
+    plt.show()
+
+find_winning_strategy()
 
