@@ -81,7 +81,7 @@ Output: [(10, course1), (11, course2)]  -- This would be a first-price assignmen
 
 def default_clearing_function(bids: List[Dict[Course, float]]) -> List[Tuple[float, Course]]:
     """First-price auction: highest overall bid gets assigned a course, pay that price."""
-    assignments = [None] * len(bids)
+    assignments: List[Tuple[float, Course]] = [None] * len(bids)
     bids_flattened = []
     capacities = {}
     for player_idx in range(len(bids)):
