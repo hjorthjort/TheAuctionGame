@@ -1,4 +1,5 @@
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Callable
+import random
 import math
 from scipy.stats import uniform
 
@@ -8,6 +9,7 @@ import numpy as np
 #import random
 #from datetime import datetime
 #random.seed(datetime.now())  # So that we have truly random numbers.
+
 
 class Auction:
     """Class that can simulate and auction."""
@@ -30,13 +32,14 @@ class Auction:
 
     def run_auction(self):
         """returns the allocations of courses to players."""
-        all_bids = []
-        all_utilities = [p.utilities for p in self.players]
-        return self.clearing_function(all_bids), all_utilities
+        all_bids = list(map(lambda p: p.strategy(self.courses), self.players))
+        return self.clearing_function(all_bids)
+
+    def __repr__(self):
+        return str(self.run_auction())
 
 
 class Course:
-
     def __init__(self, capacity=1, popularity_distribution=None, name="Unnamed course"):
         self.capacity = capacity
         if popularity_distribution is None:
@@ -49,19 +52,29 @@ class Course:
         return "{" + self.name + ", id: " + str(id(self)) + ", capacity: " + str(self.capacity) + "}"
 
 
-class Player:
+Strategy = Callable[[List[Course]], Dict[Course, float]]
 
-    def __init__(self, strategy=None, utilities: Dict[Course, float]=None):
+
+class Player:
+    class _InfiniteDict:
+        def __init__(self, default_item):
+            self.default_item = default_item
+            self.dictionary = {}
+
+        def __getitem__(self, key):
+            if key in self.dictionary.keys():
+                return self.dictionary[key]
+            return self.default_item
+
+    def __init__(self, strategy: Strategy = None, utilities: Dict[Course, float]=None):
         if strategy is None:
             self.strategy = _default_strategy
         else:
             self.strategy = strategy
         if utilities is None:
-            self.utilities = {}
+            self.utilities = Player._InfiniteDict(0)
         else:
             self.utilities = utilities
-
-
 
 #  Useful default functions.
 """
@@ -87,6 +100,7 @@ def default_clearing_function(bids: List[Dict[Course, float]]) -> List[Tuple[flo
         for course, bid in bids_of_player.items():
             bids_flattened.append((player_idx, course, bid))
             capacities[course] = course.capacity
+    random.shuffle(bids_flattened)  # The sorting is usually in place, so make sure we don't give the players an ordering
     bids_flattened.sort(key=lambda item: item[2], reverse=True)  # Sort on bid, descending.
     assigned_players = set()
     for player, course, bid in bids_flattened:
@@ -98,21 +112,10 @@ def default_clearing_function(bids: List[Dict[Course, float]]) -> List[Tuple[flo
     return assignments
 
 
-def _default_strategy(max_tokens: float, _num_players: int, utilities: Dict[Course, float]) -> Dict[Course, float]:
-    """The "all-in" strategy."""
-    bids = {}
-    max_utility = -math.inf
-    most_valued_course = None
-    for course, utility in utilities.items():
-        if max_utility < utility:
-            if most_valued_course is not None:
-                bids[most_valued_course] = 0
-            bids[course] = max_tokens
-            max_utility = utility
-            most_valued_course = course
-        else:
-            bids[course] = 0
-    return bids
+
+def _default_strategy(courses: List[Course]) -> Dict[Course, float]:
+    """Bid 0 on everything"""
+    return dict(zip(courses, [.0] * len(courses)))
 
 
 def uniform_distribution(range_min, range_max):

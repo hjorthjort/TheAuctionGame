@@ -6,7 +6,7 @@ class TestAuction(unittest.TestCase):
 
     def test_auction_correctness(self):
         auction = Auction()  # Default implementation.
-        (res, all_utilities) = auction.run_auction()
+        res = auction.run_auction()
         self.assertEqual(len(res), len(auction.players))
 
         actual_assignments = list(filter(lambda x: x is not None, res))  # All which are not None.

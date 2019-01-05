@@ -9,9 +9,9 @@ fixed_auctions = {
         max_tokens=math.inf,
         courses=courses['second_price'],
         players=[
-            Player(utilitites={courses['second_price'][0]: 3.0}),
-            Player(utilitites={courses['second_price'][0]: 4.0}),
-            Player(utilitites={courses['second_price'][0]: 1.0})
+            Player(utilities={courses['second_price'][0]: 3.0}),
+            Player(utilities={courses['second_price'][0]: 4.0}),
+            Player(utilities={courses['second_price'][0]: 1.0})
         ]
     )
 }
