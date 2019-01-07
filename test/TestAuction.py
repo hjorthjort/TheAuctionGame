@@ -4,6 +4,15 @@ from src.Auction import *
 
 class TestAuction(unittest.TestCase):
 
+    def test_infinite_dict(self):
+        dic = InfiniteDict(4)
+        dic[1] = 10
+        dic['yo'] = 100
+        self.assertEqual(dic[1], 10)
+        self.assertEqual(dic['yo'], 100)
+        self.assertEqual(dic[0], 4)
+        self.assertEqual(dic[None], 4)
+
     def test_auction_correctness(self):
         auction = Auction()  # Default implementation.
         res = auction.run_auction()

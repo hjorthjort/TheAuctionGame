@@ -1,4 +1,4 @@
-from scipy.stats import uniform
+from scipy.stats import norm
 from typing import Callable
 from src.Auction import *
 import random
@@ -6,8 +6,8 @@ import numpy as np
 
 
 def run_ga(auction=Auction(), generations=10e3, population_size=100, tournament_prob=0.75, tournament_size=2,
-           crossover_prob=0.5, mutation_prob=0.1, insertion_prob=0.05, elitism_copies=1, creep_size=3.0):
-    """Modifies players strategies to have them perform optmially, but modifies nothing else about the auction."""
+           crossover_prob=0.5, mutation_prob=0.1, elitism_copies=1, creep_size=3.0):
+    """Modifies players strategies to have them perform optimally, but modifies nothing else about the auction."""
     players = auction.players
     populations = [initialize_population(population_size, len(auction.courses)) for _p in players]  # One population for each player.
     for i_generation in range(int(generations)):
@@ -25,14 +25,13 @@ def run_ga(auction=Auction(), generations=10e3, population_size=100, tournament_
             apply_elitism(population, best_individual, elitism_copies)
             players[player_idx].strategy = decoded_population[best_individual_idx]
 
+
 def decode_chromosome(bids: List[float]) -> Strategy:  # Returns a bidding strategy.
     def strategy(courses: List[Course]):
         assert(len(courses) == len(bids))
         courses_and_bids = dict(zip(courses, bids))
         return courses_and_bids
     return strategy
-
-
 
 
 def initialize_population(population_size: int, chromosome_length: int) -> List[List[float]]:
@@ -52,7 +51,10 @@ def get_fitnesses(auction: Auction, player_idx: int, strategies: List[Strategy])
             fitnesses[individual_idx] = 0
             continue
         pay, course = res[player_idx]
-        utility = auction.players[player_idx].utilities[course]
+        if course is None:
+            utility = 0
+        else:
+            utility = auction.players[player_idx].utilities[course]
         fitness = utility - pay
         fitnesses[individual_idx] = fitness
     return fitnesses
@@ -69,7 +71,8 @@ def apply_mutation(population: List[List[float]], mutation_probability: float, c
     for chromosome in population:
         for i in range(len(chromosome)):
             if mutation_probability > random.random():
-                creep = random.random() * creep_size - creep_size/2
+                # 50/50 uniform or gaussian.
+                creep = random.random() * creep_size - creep_size/2 if random.random() > 0.5 else norm.rvs()
                 new_gene = max(0, chromosome[i] + creep)
                 chromosome[i] = new_gene
 
@@ -85,6 +88,7 @@ def apply_crossover(population: List[List[float]], crossover_probability: float)
             new_ind2 = ind2[:slicepoint] + ind1[slicepoint:]
             population[i] = new_ind1
             population[i+1] = new_ind2
+
 
 def apply_selection(population: List[List[float]], fitnesses: List[float], tournament_prob: float, tournament_size: int):
     new_population = [None] * len(population)

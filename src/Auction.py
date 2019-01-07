@@ -23,7 +23,7 @@ class Auction:
         self.courses = courses
         self.players = players
         if clearing_function is None:
-            self.clearing_function = default_clearing_function
+            self.clearing_function = first_price_clearing_function
         else:
             self.clearing_function = clearing_function
 
@@ -36,7 +36,11 @@ class Auction:
         return self.clearing_function(all_bids)
 
     def __repr__(self):
-        return str(self.run_auction())
+        players_repr = ""
+        for p in self.players:
+            bids = p.strategy(self.courses)
+            players_repr += str(bids) + "\n"
+        return str(self.run_auction()) + "\nPlayers:\n" + players_repr
 
 
 class Course:
@@ -55,24 +59,28 @@ class Course:
 Strategy = Callable[[List[Course]], Dict[Course, float]]
 
 
-class Player:
-    class _InfiniteDict:
-        def __init__(self, default_item):
-            self.default_item = default_item
-            self.dictionary = {}
+class InfiniteDict(dict):
+    def __init__(self, default_item):
+        super().__init__()
+        self.default_item = default_item
 
-        def __getitem__(self, key):
-            if key in self.dictionary.keys():
-                return self.dictionary[key]
+    def __getitem__(self, key):
+        if key is None:
             return self.default_item
+        return super().__getitem__(key)
 
+    def __missing__(self, _key):
+        return self.default_item
+
+
+class Player:
     def __init__(self, strategy: Strategy = None, utilities: Dict[Course, float]=None):
         if strategy is None:
             self.strategy = _default_strategy
         else:
             self.strategy = strategy
         if utilities is None:
-            self.utilities = Player._InfiniteDict(0)
+            self.utilities = InfiniteDict(0)
         else:
             self.utilities = utilities
 
@@ -90,7 +98,7 @@ Output: [(10, course1), (11, course2)]  -- This would be a first-price assignmen
 """
 
 
-def default_clearing_function(bids: List[Dict[Course, float]]) -> List[Tuple[float, Course]]:
+def first_price_clearing_function(bids: List[Dict[Course, float]]) -> List[Tuple[float, Course]]:
     """First-price auction: highest overall bid gets assigned a course, pay that price."""
     assignments: List[Tuple[float, Course]] = [None] * len(bids)
     bids_flattened = []
@@ -112,6 +120,40 @@ def default_clearing_function(bids: List[Dict[Course, float]]) -> List[Tuple[flo
     return assignments
 
 
+def second_price_clearing_function(bids: List[Dict[Course, float]]) -> List[Tuple[float, Course]]:
+    assigned_courses: List[Course] = [None] * len(bids)
+    bids_flattened = []
+    capacities = {}
+    for player_idx in range(len(bids)):
+        bids_of_player = bids[player_idx]
+        for course, bid in bids_of_player.items():
+            bids_flattened.append((player_idx, course, bid))
+            capacities[course] = course.capacity
+    random.shuffle(bids_flattened)  # The sorting is usually in place, so make sure we don't give the players an ordering.
+    bids_flattened.sort(key=lambda item: item[2], reverse=True)  # Sort on bid, descending.
+
+    payments: Dict[Course, float] = InfiniteDict(None)
+    assigned_players = set()
+    for player, course, bid in bids_flattened:
+        if player not in assigned_players:
+            if capacities[course] > 0:
+                assigned_courses[player] = course
+                assigned_players.add(player)
+                capacities[course] -= 1
+            elif payments[course] is None:
+                payments[course] = bid
+
+    assignments = []
+    for player_idx in range(len(assigned_courses)):
+        course = assigned_courses[player_idx]
+        if payments[course] is None:
+            price = 0
+        else:
+            price = payments[course]
+
+        assignments.append((price, course))
+    return assignments
+
 
 def _default_strategy(courses: List[Course]) -> Dict[Course, float]:
     """Bid 0 on everything"""
@@ -122,54 +164,6 @@ def uniform_distribution(range_min, range_max):
     def dist():
         return range_min + uniform.rvs() * (range_max - range_min)
     return dist
-
-
-def applied_clearing_function(bids, courses):
-    n_player = len(bids)
-    n_courses = len(courses)
-    price=[0]*n_courses
-    left_capacity=[0]*n_courses
-    assignment = [[-1, -1]] * n_player     #1st position: assigned class, 2nd cost of class
-
-    for c in range(n_courses):
-        left_capacity[c] = courses[c].capacity
-
-    for i in range(n_player):
-        # search for highest bid
-        highest_bid_player = -1
-        highest_bid_course = -1
-        highest_bid_value = -1
-
-        for p in range(n_player):
-            if assignment[p][0] is not -1:
-                p = p+1
-            else:
-                for c in range(n_courses):
-                    if left_capacity[c] < 0:
-                        c = c+1
-                    else:
-                        if bids[p][c] > highest_bid_value:
-                            highest_bid_value = bids[p][c]
-                            highest_bid_player = p
-                            highest_bid_course = c
-
-
-        if left_capacity[highest_bid_course] is 0:          # set price if first player cant enter
-            price[highest_bid_course] = highest_bid_value
-            left_capacity[highest_bid_course] -= 1
-        else:                                               # assign player if free spot avaliable
-            assignment[highest_bid_player][0] = highest_bid_course
-            left_capacity[highest_bid_course] -= 1
-
-    for i in range(n_player):
-        assignment[i][1] = price[assignment[i][0]]
-
-    return assignment
-
-    # assign player corresponding to highest bid
-    # if player can be assigned: remove all bids of player
-    # else: update price (price array)of course and remove all bids for that course
-
 
 
 
