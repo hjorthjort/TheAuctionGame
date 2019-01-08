@@ -6,7 +6,7 @@ def profile():
     cProfile.run('res = run_ga(generations=100)')
 
 
-auction = fixed_auctions['second_price']
+auction = fixed_auctions['realistic1']
 print(auction)
 run_ga(auction=auction)
 print(auction)
