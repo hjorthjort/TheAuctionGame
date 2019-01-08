@@ -36,10 +36,16 @@ class Auction:
         return self.clearing_function(all_bids)
 
     def __repr__(self):
+        res = self.run_auction()
         players_repr = ""
-        for p in self.players:
+        for i in range(len(self.players)):
+            pay, course = res[i]
+            p = self.players[i]
             bids = p.strategy(self.courses)
-            players_repr += str(bids) + "\n"
+            players_repr += "Player: " + str(i) + "\n"
+            players_repr += "Utilities: " + str(p.utilities.values()) + "\n"
+            players_repr += "Bids: " + str(bids.values()) + "\n"
+            players_repr += "Gets: " + str(course) + " for " + str(pay) + "\n"
         return str(self.run_auction()) + "\nPlayers:\n" + players_repr
 
 
@@ -51,6 +57,9 @@ class Course:
         else:
             self.popularity_distribution = popularity_distribution
         self.name = name
+
+    def __str__(self):
+        return self.name
 
     def __repr__(self):
         return "{" + self.name + ", id: " + str(id(self)) + ", capacity: " + str(self.capacity) + "}"
@@ -147,7 +156,7 @@ def second_price_clearing_function(bids: List[Dict[Course, float]]) -> List[Tupl
     for player_idx in range(len(assigned_courses)):
         course = assigned_courses[player_idx]
         if payments[course] is None:
-            price = 0
+            price = 0.0
         else:
             price = payments[course]
 
