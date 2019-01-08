@@ -20,7 +20,7 @@ class TestAuction(unittest.TestCase):
 
         actual_assignments = list(filter(lambda x: x is not None, res))  # All which are not None.
         costs = map(lambda pair: pair[0], actual_assignments)
-        self.assertTrue(all(map(lambda x: 0 <= x <= auction.max_tokens, costs)), "Some payments in invalid range")
+        self.assertTrue(all(map(lambda x: 0 <= x <= auction.max_bid, costs)), "Some payments in invalid range")
 
         total_capacities = sum(map(lambda c: c.capacity, auction.courses))
         total_assigned_students = len(actual_assignments)

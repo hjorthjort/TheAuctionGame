@@ -14,12 +14,12 @@ import numpy as np
 class Auction:
     """Class that can simulate and auction."""
 
-    def __init__(self, max_tokens: float=100, players=None, courses=None, clearing_function=None):
+    def __init__(self, max_bid: float=100, players=None, courses=None, clearing_function=None):
         if courses is None:
             courses = [Course() for _i in range(3)]
         if players is None:
             players = [Player() for _i in range(2)]
-        self.max_tokens = max_tokens
+        self.max_bid = max_bid
         self.courses = courses
         self.players = players
         if clearing_function is None:
