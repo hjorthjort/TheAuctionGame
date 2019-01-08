@@ -37,13 +37,17 @@ class Auction:
 
     def __repr__(self):
         res = self.run_auction()
+        all_utilities = list(map(lambda p: p.utilities, self.players))
+        optimal_res = second_price_clearing_function(all_utilities)
         max_utility = 0
         total_utility = 0
         for i in range(len(res)):
             pay, course = res[i]
-            max_utility += max(self.players[i].utilities.values())
+            _pay, optimal_course = optimal_res[i]
             if course is not None:
                 total_utility += self.players[i].utilities[course]
+            if optimal_course is not None:
+                max_utility += self.players[i].utilities[optimal_course]
         players_repr = ""
         for i in range(len(self.players)):
             pay, course = res[i]

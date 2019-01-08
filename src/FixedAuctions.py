@@ -3,7 +3,7 @@ from src.Auction import *
 courses = {
     'single_item': [Course(capacity=1, name="single_item")],
     'three_courses': [Course(capacity=3, name="physics"),
-                      Course(capacity=18, name="cryptography"),
+                      Course(capacity=10, name="cryptography"),
                       Course(capacity=6, name="neural networks"),
                       ]
 }
@@ -33,11 +33,11 @@ fixed_auctions = {
     ),
     'realistic1': Auction(
         clearing_function=second_price_clearing_function,
-        max_bid=50,
+        max_bid=0.001,
         courses=courses['three_courses'],
         players=[
             Player(utilities=dict([(courses['three_courses'][i], random.random()*200) for i in [0,1,2]]))
-            for _i in range(20)
+            for _i in range(18)
         ]
     )
 }
