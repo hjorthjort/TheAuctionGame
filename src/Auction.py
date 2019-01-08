@@ -37,6 +37,13 @@ class Auction:
 
     def __repr__(self):
         res = self.run_auction()
+        max_utility = 0
+        total_utility = 0
+        for i in range(len(res)):
+            pay, course = res[i]
+            max_utility += max(self.players[i].utilities.values())
+            if course is not None:
+                total_utility += self.players[i].utilities[course]
         players_repr = ""
         for i in range(len(self.players)):
             pay, course = res[i]
@@ -46,7 +53,7 @@ class Auction:
             players_repr += "Utilities: " + str(p.utilities.values()) + "\n"
             players_repr += "Bids: " + str(bids.values()) + "\n"
             players_repr += "Gets: " + str(course) + " for " + str(pay) + "\n"
-        return str(self.run_auction()) + "\nPlayers:\n" + players_repr
+        return str(self.run_auction()) + "\nPlayers:\n" + players_repr + "\nTotal uitility: " + str(total_utility) + " out of max " + str(max_utility)
 
 
 class Course:
