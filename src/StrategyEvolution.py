@@ -6,10 +6,10 @@ import numpy as np
 
 
 def run_ga(auction=Auction(), generations=10e3, population_size=100, tournament_prob=0.75, tournament_size=2,
-           crossover_prob=0.5, mutation_prob=0.1, elitism_copies=1, creep_factor=0.2):
+           crossover_prob=0.5, mutation_prob=0.1, elitism_copies=1, creep_factor=0.2, start_range=1):
     """Modifies players strategies to have them perform optimally, but modifies nothing else about the auction."""
     players = auction.players
-    populations = [initialize_population(population_size, len(auction.courses)) for _p in players]  # One population for each player.
+    populations = [initialize_population(population_size, len(auction.courses), start_range, auction.max_bid) for _p in players]  # One population for each player.
     for i_generation in range(int(generations)):
         print(auction)
         for player_idx in range(len(players)):
@@ -22,7 +22,7 @@ def run_ga(auction=Auction(), generations=10e3, population_size=100, tournament_
             # Operators.
             apply_selection(population, fitnesses, tournament_prob, tournament_size)
             apply_crossover(population, crossover_prob)
-            apply_mutation(population, mutation_prob, creep_factor)
+            apply_mutation(population, mutation_prob, creep_factor, auction.max_bid)
             apply_elitism(population, best_individual, elitism_copies)
             players[player_idx].strategy = decoded_population[best_individual_idx]
 
@@ -35,10 +35,10 @@ def decode_chromosome(bids: List[float]) -> Strategy:  # Returns a bidding strat
     return strategy
 
 
-def initialize_population(population_size: int, chromosome_length: int) -> List[List[float]]:
+def initialize_population(population_size: int, chromosome_length: int, start_range: float, max_bid: float) -> List[List[float]]:
     population = []
     for i in range(population_size):
-        population.append([abs(norm.rvs()) for _i in range(chromosome_length)])
+        population.append([min(max_bid, abs(norm.rvs() * start_range)) for _i in range(chromosome_length)])
     return population
 
 
@@ -68,13 +68,14 @@ def apply_elitism(population, best_individual, num_copies):
         population[i] = best_individual.copy()
 
 
-def apply_mutation(population: List[List[float]], mutation_probability: float, creep_factor: float):
+def apply_mutation(population: List[List[float]], mutation_probability: float, creep_factor: float, max_bid):
     for chromosome in population:
         for i in range(len(chromosome)):
             if mutation_probability > random.random():
                 creep_range = max(1.0, creep_factor * chromosome[i])
                 creep = random.random() * creep_range - creep_range / 2
                 new_gene = max(0.0, chromosome[i] + creep)
+                new_gene = min(max_bid, new_gene)
                 chromosome[i] = new_gene
 
 
