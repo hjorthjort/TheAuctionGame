@@ -35,19 +35,26 @@ class Auction:
         all_bids = list(map(lambda p: p.strategy(self.courses), self.players))
         return self.clearing_function(all_bids)
 
-    def __repr__(self):
-        res = self.run_auction()
+    def get_allocative_efficiency(self):
         all_utilities = list(map(lambda p: p.utilities, self.players))
-        optimal_res = second_price_clearing_function(all_utilities)
         max_utility = 0
         total_utility = 0
-        for i in range(len(res)):
-            _pay, course = res[i]
-            _pay, optimal_course = optimal_res[i]
-            if course is not None:
-                total_utility += self.players[i].utilities[course]
-            if optimal_course is not None:
-                max_utility += self.players[i].utilities[optimal_course]
+        for _i in range(1000):
+
+            res = self.run_auction()
+            optimal_res = second_price_clearing_function(all_utilities)
+            for i in range(len(res)):
+                _pay, course = res[i]
+                _pay, optimal_course = optimal_res[i]
+                if course is not None:
+                    total_utility += self.players[i].utilities[course]
+                if optimal_course is not None:
+                    max_utility += self.players[i].utilities[optimal_course]
+        return total_utility/1000, max_utility/1000
+
+    def __repr__(self):
+        res = self.run_auction()
+        total_utility, max_utility = self.get_allocative_efficiency()
         players_repr = ""
         for i in range(len(self.players)):
             pay, course = res[i]
