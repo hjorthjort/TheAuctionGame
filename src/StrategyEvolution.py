@@ -28,7 +28,7 @@ def run_ga(auction=Auction(), generations=10e3, population_size=100, tournament_
                 apply_mutation(population, mutation_prob, creep_factor, auction.max_bid)
                 apply_elitism(population, best_individual, elitism_copies)
                 player.strategy = decoded_population[best_individual_idx]
-        print(auction)
+        # print(auction)
 
 
 def decode_chromosome(bids: List[float]) -> Strategy:  # Returns a bidding strategy.

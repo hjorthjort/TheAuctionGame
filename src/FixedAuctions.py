@@ -9,6 +9,7 @@ courses = {
 }
 
 # Default clearing function is a first-price.
+random.seed(20190109)
 fixed_auctions = {
     'first_price': Auction(
         clearing_function=first_price_clearing_function,
@@ -33,7 +34,7 @@ fixed_auctions = {
     ),
     'realistic1': Auction(
         clearing_function=second_price_clearing_function,
-        max_bid=0.001,
+        max_bid=10,
         courses=courses['three_courses'],
         players=[
             Player(utilities=dict([(courses['three_courses'][i], random.random()*200) for i in [0,1,2]]))
