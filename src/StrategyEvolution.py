@@ -10,21 +10,25 @@ def run_ga(auction=Auction(), generations=10e3, population_size=100, tournament_
     """Modifies players strategies to have them perform optimally, but modifies nothing else about the auction."""
     players = auction.players
     populations = [initialize_population(population_size, len(auction.courses), start_range, auction.max_bid) for _p in players]  # One population for each player.
+    for i in range(len(auction.players)):
+        auction.players[i].population = populations[i]
     for i_generation in range(int(generations)):
-        print(auction)
-        for player_idx in range(len(players)):
-            population = populations[player_idx]
-            decoded_population = list(map(lambda bids: decode_chromosome(bids), population))
-            fitnesses = get_fitnesses(auction, player_idx, decoded_population)
-            best_individual_idx = fitnesses.index(max(fitnesses))
-            best_individual = population[best_individual_idx]
+        random.shuffle(auction.players)
+        for player in players:
+            for _j in range(int(i_generation/1)):
+                population = player.population
+                decoded_population = list(map(lambda bids: decode_chromosome(bids), population))
+                fitnesses = get_fitnesses(auction, player, decoded_population)
+                best_individual_idx = fitnesses.index(max(fitnesses))
+                best_individual = population[best_individual_idx]
 
-            # Operators.
-            apply_selection(population, fitnesses, tournament_prob, tournament_size)
-            apply_crossover(population, crossover_prob)
-            apply_mutation(population, mutation_prob, creep_factor, auction.max_bid)
-            apply_elitism(population, best_individual, elitism_copies)
-            players[player_idx].strategy = decoded_population[best_individual_idx]
+                # Operators.
+                apply_selection(population, fitnesses, tournament_prob, tournament_size)
+                apply_crossover(population, crossover_prob)
+                apply_mutation(population, mutation_prob, creep_factor, auction.max_bid)
+                apply_elitism(population, best_individual, elitism_copies)
+                player.strategy = decoded_population[best_individual_idx]
+        print(auction)
 
 
 def decode_chromosome(bids: List[float]) -> Strategy:  # Returns a bidding strategy.
@@ -42,22 +46,24 @@ def initialize_population(population_size: int, chromosome_length: int, start_ra
     return population
 
 
-def get_fitnesses(auction: Auction, player_idx: int, strategies: List[Strategy]) -> List[float]:
+def get_fitnesses(auction: Auction, player: Player, strategies: List[Strategy]) -> List[float]:
     fitnesses = [.0] * len(strategies)
+    player_idx = auction.players.index(player)
     for individual_idx in range(len(strategies)):
         current_strategy = strategies[individual_idx]
         auction.players[player_idx].strategy = current_strategy
         res = auction.run_auction()
-        if res[player_idx] is None:
-            fitnesses[individual_idx] = 0
-            continue
-        pay, course = res[player_idx]
-        if course is None:
-            utility = 0
-        else:
-            utility = auction.players[player_idx].utilities[course]
-        fitness = utility - pay
-        fitnesses[individual_idx] = fitness
+        average_fitness = 0
+        for _i in range(1000):
+            pay, course = res[player_idx]
+            if course is None:
+                utility = 0
+            else:
+                utility = auction.players[player_idx].utilities[course]
+            fitness = utility - pay
+            average_fitness += fitness
+        average_fitness /= 1000
+        fitnesses[individual_idx] = average_fitness
     return fitnesses
 
 

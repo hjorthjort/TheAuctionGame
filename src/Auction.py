@@ -42,7 +42,7 @@ class Auction:
         max_utility = 0
         total_utility = 0
         for i in range(len(res)):
-            pay, course = res[i]
+            _pay, course = res[i]
             _pay, optimal_course = optimal_res[i]
             if course is not None:
                 total_utility += self.players[i].utilities[course]
