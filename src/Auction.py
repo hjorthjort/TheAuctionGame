@@ -144,6 +144,9 @@ def first_price_clearing_function(bids: List[Dict[Course, float]]) -> List[Tuple
             assignments[player] = (bid, course)
             assigned_players.add(player)
             capacities[course] -= 1
+    for i in range(len(assignments)):
+        if assignments[i] is None:
+            assignments[i] = (.0, None)
     return assignments
 
 
